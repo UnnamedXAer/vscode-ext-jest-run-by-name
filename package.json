@@ -2,6 +2,11 @@
 	"name": "vscode-ext-jest-run-by-name",
 	"displayName": "Jest run by name",
 	"description": "Run Jest test by entered name.",
+	"author": {
+		"email": "UnnamedXAer@gmail.com",
+		"name": "UnnamedXAer",
+		"url": "https://github.com/UnnamedXAer"
+	},
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.52.0"
@@ -10,14 +15,19 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:vscode-ext-jest-run-by-name.helloWorld"
+		"onCommand:vscode-ext-jest-run-by-name.jestByName-inputBox",
+		"onCommand:vscode-ext-jest-run-by-name.jestByName-quickPick"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "vscode-ext-jest-run-by-name.helloWorld",
+				"command": "vscode-ext-jest-run-by-name.jestByName-inputBox",
 				"title": "Jest run by name"
+			},
+			{
+				"command": "vscode-ext-jest-run-by-name.jestByName-quickPick",
+				"title": "Jest run by name [select]"
 			}
 		]
 	},
@@ -30,13 +40,13 @@
 		"test": "node ./out/test/runTest.js"
 	},
 	"devDependencies": {
-		"@types/vscode": "^1.52.0",
 		"@types/glob": "^7.1.3",
 		"@types/mocha": "^8.0.4",
-		"@types/node": "^12.11.7",
-		"eslint": "^7.15.0",
+		"@types/node": "^12.19.9",
+		"@types/vscode": "^1.52.0",
 		"@typescript-eslint/eslint-plugin": "^4.9.0",
 		"@typescript-eslint/parser": "^4.9.0",
+		"eslint": "^7.15.0",
 		"glob": "^7.1.6",
 		"mocha": "^8.1.3",
 		"typescript": "^4.1.2",

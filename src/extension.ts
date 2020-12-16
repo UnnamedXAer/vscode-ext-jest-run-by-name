@@ -1,6 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import * as JestByName from './services/jestByName';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -11,30 +12,23 @@ export function activate(context: vscode.ExtensionContext) {
 		'Congratulations, your extension "vscode-ext-jest-run-by-name" is now active!'
 	);
 
+	// @todo: load testable on extension activate
+	// @improvement: show loading indicator while loading testable.
+
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand(
-		'vscode-ext-jest-run-by-name.helloWorld',
-		async () => {
-			
-
-			const pick = await vscode.window.showQuickPick(['Ok...'], {
-				onDidSelectItem: (item) => {
-					console.log('onDidSelectItem - pickItem:', item);
-				},
-				canPickMany: true,
-				matchOnDescription: true,
-				matchOnDetail: true,
-				placeHolder: 'search test name...'
-			});
-
-			console.log('pick', pick);
-			console.log('Done');
-		}
+	let disposableCommandQuickPick = vscode.commands.registerCommand(
+		'vscode-ext-jest-run-by-name.jestByName-quickPick',
+		JestByName.quickPickCommandHandler
 	);
 
-	context.subscriptions.push(disposable);
+	let disposableCommandUserInput = vscode.commands.registerCommand(
+		'vscode-ext-jest-run-by-name.jestByName-inputBox',
+		JestByName.userInputCommandHandler
+	);
+
+	context.subscriptions.push(disposableCommandQuickPick, disposableCommandUserInput);
 }
 
 // this method is called when your extension is deactivated
