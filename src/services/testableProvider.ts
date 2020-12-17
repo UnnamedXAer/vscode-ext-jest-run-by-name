@@ -1,24 +1,24 @@
 import * as vscode from 'vscode';
 import { Testable } from '../models/testable';
 import { TestableType } from '../types/types';
+import { getArraysUnion } from '../utils/array';
 
 // @improvement: cache file & testable
 // @improvement: update files & testable on file change only
 export class TestableProvider {
-	protected readonly defaultJestMatchTestsGlobPatterns: vscode.GlobPattern[] = [
+	protected readonly defaultJestMatchTestsGlobPatterns: string[] = [
 		'**/__tests__/**/*.[jt]s?(x)',
-		'**/?(*.)+(spec|test).[tj]s?(x)'
-		// '**/__tests__/**/*.test.ts'
+		'**/?(*.)+(spec|test).[jt]s?(x)'
 	];
 
 	async getTestable() {
 		const matchTestsGlobPatterns = await this.getMatchTestsGlobPatterns();
-		const files = await this.findTestFiles(matchTestsGlobPatterns);
-		const testable = await this.findsTestable(files);
-		return testable;
+		const filesUri = await this.findTestFiles(matchTestsGlobPatterns);
+		const testableItems = await this.findsTestable(filesUri);
+		return testableItems;
 	}
 
-	async getMatchTestsGlobPatterns(): Promise<vscode.GlobPattern[]> {
+	async getMatchTestsGlobPatterns(): Promise<string[]> {
 		const jestConfigPatterns = await this.getJestConfigPatterns();
 		if (jestConfigPatterns !== null) {
 			if (Array.isArray(jestConfigPatterns.testMatch)) {
@@ -33,7 +33,7 @@ export class TestableProvider {
 	}
 
 	protected async getJestConfigPatterns(): Promise<{
-		testMatch: vscode.GlobPattern[];
+		testMatch: string[];
 		source: string;
 	} | null> {
 		// @todo: check package.json for the "jest" config
@@ -63,23 +63,63 @@ export class TestableProvider {
 	}
 
 	protected async findTestFiles(
-		matchTestsGlobPatterns: vscode.GlobPattern[]
+		matchTestsGlobPatterns: string[]
 	): Promise<vscode.Uri[]> {
-		const testFilesUris: vscode.Uri[] = [];
-		const workspaceName = vscode.workspace.name;
-		if (workspaceName === undefined) {
-			throw new Error('No active workspace.');
+		// const testFilesUris: vscode.Uri[] = [];
+		let globTestFilesUris: vscode.Uri[] = [];
+		const { name: workspaceName, workspaceFolders } = vscode.workspace;
+		if (workspaceName === undefined || workspaceFolders === undefined) {
+			throw new Error(`No active workspace${!workspaceFolders ? ' folders' : ''}.`);
 		}
-		for (let i = 0; i < matchTestsGlobPatterns.length; i++) {
-			const currentPattern = /*workspaceName + '/' +*/ matchTestsGlobPatterns[i];
-			const patternTestFilesUris = await vscode.workspace.findFiles(
-				currentPattern,
-				'**/node_modules/**'
-			);
-			testFilesUris.push(...patternTestFilesUris);
+		for (let folderIdx = 0; folderIdx < workspaceFolders.length; folderIdx++) {
+			const folder = workspaceFolders[folderIdx];
+
+			// 	// - by vscode.workspace.findFiles
+			// 	for (let patternIdx = 0; patternIdx < matchTestsGlobPatterns.length; patternIdx++) {
+			// 		const currentPattern = matchTestsGlobPatterns[patternIdx];
+			// 		const pattern = new vscode.RelativePattern(
+			// 			folder.uri.fsPath,
+			// 			currentPattern
+			// 		);
+			// 		const files = await vscode.workspace.findFiles(
+			// 			pattern,
+			// 			'**/node_modules/**'
+			// 		);
+			// 		testFilesUris.push(...files);
+			// 	}
+			// 	console.log('by [vscode.workspace.findFiles]', testFilesUris.length);
+
+			// - by npm Glob
+			var glob = require('glob');
+			for (
+				let patternIdx = 0;
+				patternIdx < matchTestsGlobPatterns.length;
+				patternIdx++
+			) {
+				const currentPattern = matchTestsGlobPatterns[patternIdx];
+				const files: any[] = await new Promise((resolve, reject) => {
+					glob(
+						currentPattern,
+						{
+							absolute: true,
+							cwd: folder.uri.fsPath,
+							ignore: ['**/node_modules/**']
+						},
+						function (err: Error, files: any[]) {
+							if (err) {
+								return reject(err);
+							}
+							resolve(files);
+						}
+					);
+				});
+				globTestFilesUris = getArraysUnion(globTestFilesUris, files);
+			}
+			console.log('by [npm Glob]', globTestFilesUris.length);
 		}
-		// @todo: remove duplicates.
-		return testFilesUris;
+
+		// return testFilesUris;
+		return globTestFilesUris;
 	}
 
 	protected async findsTestable(fileUris: vscode.Uri[]): Promise<Testable[]> {
@@ -89,21 +129,28 @@ export class TestableProvider {
 			fileIndex >= 0;
 			fileIndex--
 		) {
-			const text = (
-				await vscode.workspace.fs.readFile(fileUris[fileIndex])
-			).toString();
+			try {
+				// @i: the uri = vscode.Uri.file... is temporary until the findTestFiles function fix
+				const uri = vscode.Uri.file((fileUris[fileIndex] as unknown) as string);
+				// const uri = fileUris[fileIndex];
+				const fileContent = await vscode.workspace.fs.readFile(uri);
 
-			const pattern = /(it|test|description)(\s|\t|\n|\r|)*\(('|").+\3,/gim;
+				const text = fileContent.toString();
 
-			const matches = text.match(pattern);
-			if (matches !== null) {
-				for (let matchIndex = 0; matchIndex < matches.length; matchIndex++) {
-					const match = matches[matchIndex];
-					const parenthesiseIdx = match.indexOf('(');
-					const type = match.slice(0, parenthesiseIdx) as TestableType;
-					const label = match.slice(parenthesiseIdx + 2, -2);
-					testable.push(new Testable(label, type));
+				const pattern = /(it|test|description)(\s|\t|\n|\r|)*\(('|").+\3,/gim;
+
+				const matches = text.match(pattern);
+				if (matches !== null) {
+					for (let matchIndex = 0; matchIndex < matches.length; matchIndex++) {
+						const match = matches[matchIndex];
+						const parenthesiseIdx = match.indexOf('(');
+						const type = match.slice(0, parenthesiseIdx) as TestableType;
+						const label = match.slice(parenthesiseIdx + 2, -2);
+						testable.push(new Testable(label, type, uri.fsPath));
+					}
 				}
+			} catch (err) {
+				console.warn('ERRR: ', err);
 			}
 		}
 		return testable;
