@@ -12,7 +12,7 @@
 		"vscode": "^1.52.0"
 	},
 	"categories": [
-		"Other"
+		"Testing", "Other"
 	],
 	"activationEvents": [
 		"onCommand:vscode-ext-jest-run-by-name.jestByName-inputBox",

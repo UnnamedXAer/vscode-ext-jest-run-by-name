@@ -1,9 +1,13 @@
 # Change Log
 
-All notable changes to the "vscode-ext-jest-run-by-name" extension will be documented in this file.
-
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+All notable changes to the **Jest run by name** extension will be documented in this file.
 
 ## [Unreleased]
+  - /
 
-- Initial release
+## [0.0.1] - 2020-12-18
+### Added
+- Initial options
+  -  `Jest run by name`
+  -  `Jest run by name [select]`
+  > See README.md
