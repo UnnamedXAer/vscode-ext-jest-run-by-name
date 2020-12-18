@@ -103,6 +103,7 @@ export class TestableProvider {
 						{
 							absolute: true,
 							cwd: folder.uri.fsPath,
+							// @todo: read ignore patterns
 							ignore: ['**/node_modules/**']
 						},
 						function (err: Error, files: any[]) {

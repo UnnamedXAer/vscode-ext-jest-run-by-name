@@ -29,16 +29,14 @@ export const quickPickCommandHandler = async (param: any) => {
 		quickPick.dispose();
 	});
 
-	quickPick.ignoreFocusOut = true;
+	// quickPick.ignoreFocusOut = true;
 
 	const testableProvider = new TestableProvider();
 	const testableItems = await testableProvider.getTestable();
 	const quickPickItems = createPickItems(testableItems);
-	// if (testPatternsHistory.length > 0) debugger;
 	const itemsWithHistory = testPatternsHistory
 		.map((histItem) => new QuickPickItem(historyIcon + histItem.label))
 		.concat(quickPickItems);
-	console.log('itemsWithHistory:', itemsWithHistory);
 	quickPick.items = itemsWithHistory;
 	quickPick.busy = false;
 };
@@ -53,7 +51,7 @@ export const getTerminal = (name: string): vscode.Terminal => {
 
 export const userInputCommandHandler = async () => {
 	const pick = await vscode.window.showInputBox({
-		prompt: 'Type test name or name pattern.'
+		prompt: 'Type the test name or name pattern.'
 	});
 
 	if (pick) {
@@ -92,7 +90,6 @@ const executeCommand = (
 	terminal.show();
 	const handler = vscode.window.onDidCloseTerminal((ev) => {
 		if (ev.exitStatus !== undefined && ev.processId === terminal.processId) {
-			vscode.window.showInformationMessage(`${displayName} - terminal closed.`);
 			handler.dispose();
 			terminal.dispose();
 		}
@@ -112,9 +109,6 @@ const saveAndRunUserInput = (userInput: string | QuickPickItem) => {
 					userInput.details
 			  );
 
-	if (pickItem.label.startsWith(historyIcon)) {
-		// pickItem.label = pickItem.label.slice(historyIcon.length);
-	}
 	addLastPickedItem(pickItem);
 	runJestTestsByNamePattern(pickItem.label);
 };
