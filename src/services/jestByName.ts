@@ -18,6 +18,11 @@ export const quickPickCommandHandler = async (param: any) => {
 		const pick = quickPick.selectedItems[0];
 		if (pick) {
 			userValue = pick;
+			// @refactor //not_found
+			if (userValue.details === 'not_found') {
+				// @i: force using input text
+				userValue = null;
+			}
 		}
 		const inputValue = quickPick.value;
 		if (!pick && inputValue && inputValue.length > 0) {
@@ -33,7 +38,18 @@ export const quickPickCommandHandler = async (param: any) => {
 
 	const testableProvider = new TestableProvider();
 	const testableItems = await testableProvider.getTestable();
-	const quickPickItems = createPickItems(testableItems);
+
+	let quickPickItems: QuickPickItem[] = createPickItems(testableItems);
+	// @refactor: refactor case when no testable items found.
+	if (quickPickItems.length === 0) {
+		quickPickItems = createPickItems([
+			new Testable(
+				'Did not found any tests, but you can still type the name.',
+				'',
+				'not_found'
+			)
+		]);
+	}
 	const itemsWithHistory = testPatternsHistory
 		.map((histItem) => new QuickPickItem(historyIcon + histItem.label))
 		.concat(quickPickItems);

@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { Testable } from '../models/testable';
 import { TestableType } from '../types/types';
 import { getArraysUnion } from '../utils/array';
@@ -65,7 +66,7 @@ export class TestableProvider {
 	protected async findTestFiles(
 		matchTestsGlobPatterns: string[]
 	): Promise<vscode.Uri[]> {
-		// const testFilesUris: vscode.Uri[] = [];
+		let testFilesUris: vscode.Uri[] = [];
 		let globTestFilesUris: vscode.Uri[] = [];
 		const { name: workspaceName, workspaceFolders } = vscode.workspace;
 		if (workspaceName === undefined || workspaceFolders === undefined) {
@@ -74,20 +75,37 @@ export class TestableProvider {
 		for (let folderIdx = 0; folderIdx < workspaceFolders.length; folderIdx++) {
 			const folder = workspaceFolders[folderIdx];
 
-			// 	// - by vscode.workspace.findFiles
-			// 	for (let patternIdx = 0; patternIdx < matchTestsGlobPatterns.length; patternIdx++) {
-			// 		const currentPattern = matchTestsGlobPatterns[patternIdx];
-			// 		const pattern = new vscode.RelativePattern(
-			// 			folder.uri.fsPath,
-			// 			currentPattern
-			// 		);
-			// 		const files = await vscode.workspace.findFiles(
-			// 			pattern,
-			// 			'**/node_modules/**'
-			// 		);
-			// 		testFilesUris.push(...files);
-			// 	}
-			// 	console.log('by [vscode.workspace.findFiles]', testFilesUris.length);
+			// - by vscode.workspace.findFiles
+			for (
+				let patternIdx = 0;
+				patternIdx < matchTestsGlobPatterns.length;
+				patternIdx++
+			) {
+				[
+					'**/__tests__/**/*.[jt]s?(x)',
+					//
+					'**/?(*.)+(spec|test).[jt]s?(x)'
+				];
+
+				// const currentPattern = matchTestsGlobPatterns[patternIdx];
+				const currentPattern = '**/__tests__/**/*.[jt]s';
+				const pattern = new vscode.RelativePattern(
+					folder.uri.fsPath + '\\',
+					currentPattern
+				);
+				const files = await vscode.workspace.findFiles(
+					// currentPattern
+					pattern
+					// '**/node_modules/**',
+					// 10
+				);
+				testFilesUris = getArraysUnion<vscode.Uri>(
+					testFilesUris,
+					files,
+					'fsPath'
+				);
+			}
+			console.log('by [vscode.workspace.findFiles]', testFilesUris.length);
 
 			// - by npm Glob
 			var glob = require('glob');
@@ -119,8 +137,10 @@ export class TestableProvider {
 			console.log('by [npm Glob]', globTestFilesUris.length);
 		}
 
-		// return testFilesUris;
-		return globTestFilesUris;
+		if (testFilesUris.length === 0) {
+			return globTestFilesUris;
+		}
+		return testFilesUris;
 	}
 
 	protected async findsTestable(fileUris: vscode.Uri[]): Promise<Testable[]> {
