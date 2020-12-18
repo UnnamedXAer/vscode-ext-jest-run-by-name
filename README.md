@@ -1,65 +1,46 @@
-# vscode-ext-jest-run-by-name README
+# Jest run by name
 
-This is the README for your extension "vscode-ext-jest-run-by-name". After writing up a brief description, we recommend including the following sections.
+Quickly run the Jest test by a test name.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+	- Call >Jest by name< extension
+![Type the test name](./docs/images/jest-by-name-command.png)
 
-For example if there is an image subfolder under your extension project workspace:
+	- Type the test name or name pattern and confirm by ENTER
+![Type the test name](./docs/images/jest-by-name-user-input.png)
 
-\!\[feature X\]\(images/feature-x.png\)
+	- Or you can select one of your tests name using option >Jest by name [select]<
+![Type the test name](./docs/images/jest-by-name-select-command.png)
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+	- Then selecting one of your tests name from the quick pick 
+![Type the test name](./docs/images/jest-by-name-select-user-input.png)
+
+	- The Quick pick mode has a history of the last three selections
+![Type the test name](./docs/images/jest-by-name-select-user-input-hist.png)
+
+	- Then the tests that match the name patter will be executed.
+![Type the test name](./docs/images/jest-by-name-results.png)
+
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
+1. [Jest](https://jestjs.io/) set up.
+> **Jest by name** will be looking for the tests files and therefore for the test by the patterns specified in `jest.config.*s` under `testMatch` (if not specified the default jest value will be used)
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+/
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+/
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
-
 ### 1.0.0
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+Initial release of the  **Jest by name** 
 
 -----------------------------------------------------------------------------------------------------------
 
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+**UnnamedXAer**
