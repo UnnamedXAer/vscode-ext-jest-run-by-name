@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 import { Testable } from '../models/testable';
 import { TestableType } from '../types/types';
 import { getArraysUnion } from '../utils/array';
@@ -76,36 +75,29 @@ export class TestableProvider {
 			const folder = workspaceFolders[folderIdx];
 
 			// - by vscode.workspace.findFiles
-			for (
-				let patternIdx = 0;
-				patternIdx < matchTestsGlobPatterns.length;
-				patternIdx++
-			) {
-				[
-					'**/__tests__/**/*.[jt]s?(x)',
-					//
-					'**/?(*.)+(spec|test).[jt]s?(x)'
-				];
+			// @info: vscode.workspace.findFiles does not support extended patterns like "?(pattern)"
+			// for (
+			// 	let patternIdx = 0;
+			// 	patternIdx < matchTestsGlobPatterns.length;
+			// 	patternIdx++
+			// ) {
 
-				// const currentPattern = matchTestsGlobPatterns[patternIdx];
-				const currentPattern = '**/__tests__/**/*.[jt]s';
-				const pattern = new vscode.RelativePattern(
-					folder.uri.fsPath + '\\',
-					currentPattern
-				);
-				const files = await vscode.workspace.findFiles(
-					// currentPattern
-					pattern
-					// '**/node_modules/**',
-					// 10
-				);
-				testFilesUris = getArraysUnion<vscode.Uri>(
-					testFilesUris,
-					files,
-					'fsPath'
-				);
-			}
-			console.log('by [vscode.workspace.findFiles]', testFilesUris.length);
+			// 	const currentPattern = matchTestsGlobPatterns[patternIdx];
+			// 	const relativePattern = new vscode.RelativePattern(
+			// 		folder.uri.fsPath,
+			// 		currentPattern
+			// 	);
+			// 	const files = await vscode.workspace.findFiles(
+			// 		relativePattern,
+			// 		'**/dist/**'
+			// 	);
+			// 	testFilesUris = getArraysUnion<vscode.Uri>(
+			// 		testFilesUris,
+			// 		files,
+			// 		'fsPath'
+			// 	);
+			// }
+			// console.log('by [vscode.workspace.findFiles]', testFilesUris.length);
 
 			// - by npm Glob
 			var glob = require('glob');
@@ -122,7 +114,7 @@ export class TestableProvider {
 							absolute: true,
 							cwd: folder.uri.fsPath,
 							// @todo: read ignore patterns
-							ignore: ['**/node_modules/**']
+							ignore: ['**/node_modules/**', '**/dist/**']
 						},
 						function (err: Error, files: any[]) {
 							if (err) {
