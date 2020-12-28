@@ -26,15 +26,14 @@ Quickly run the Jest test by a test name.
 ## Requirements
 
 1. [```Jest```](https://jestjs.io/) set up.
-> **Jest by name** will be looking for the tests files and therefore for the test by the patterns specified in `jest.config.*s` under `testMatch` (if not specified the default jest value will be used)
-2. [```Glob```](https://www.npmjs.com/package/glob) installed - see [Known Issues](#known-issues)
+> **Jest by name** will be looking for the tests files and therefore for the test itself by a patterns specified in `jest.config.*s` under `testMatch` (if not specified the default Jest value will be used)
 ## Extension Settings
 
 /
 
 ## Known Issues
 
-- ```vscode.workspace.findFiles``` does not support extended glob patterns [#10851](https://github.com/microsoft/vscode/issues/10851) so [```Glob```](https://www.npmjs.com/package/glob) package is used instead and require to be installed globally.
+- ```vscode.workspace.findFiles``` does not support extended glob patterns [#10851](https://github.com/microsoft/vscode/issues/10851) so [```Glob```](https://www.npmjs.com/package/glob) package is used instead.
 
 ## Release Notes
 

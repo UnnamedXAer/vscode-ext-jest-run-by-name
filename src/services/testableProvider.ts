@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as Glob from 'glob';
 import { Testable } from '../models/testable';
 import { TestableType } from '../types/types';
 import { getArraysUnion } from '../utils/array';
@@ -100,15 +101,14 @@ export class TestableProvider {
 			// console.log('by [vscode.workspace.findFiles]', testFilesUris.length);
 
 			// - by npm Glob
-			var glob = require('glob');
 			for (
 				let patternIdx = 0;
 				patternIdx < matchTestsGlobPatterns.length;
 				patternIdx++
 			) {
 				const currentPattern = matchTestsGlobPatterns[patternIdx];
-				const files: any[] = await new Promise((resolve, reject) => {
-					glob(
+				const files: vscode.Uri[] = await new Promise((resolve, reject) => {
+					Glob.glob(
 						currentPattern,
 						{
 							absolute: true,
@@ -116,23 +116,21 @@ export class TestableProvider {
 							// @todo: read ignore patterns
 							ignore: ['**/node_modules/**', '**/dist/**']
 						},
-						function (err: Error, files: any[]) {
+						function (err, files) {
 							if (err) {
 								return reject(err);
 							}
-							resolve(files);
+							resolve(files.map(vscode.Uri.file));
 						}
 					);
 				});
-				globTestFilesUris = getArraysUnion(globTestFilesUris, files);
+				globTestFilesUris = getArraysUnion(globTestFilesUris, files, 'fsPath');
 			}
-			console.log('by [npm Glob]', globTestFilesUris.length);
+			// console.log('by [npm Glob]', globTestFilesUris.length);
 		}
 
-		if (testFilesUris.length === 0) {
-			return globTestFilesUris;
-		}
-		return testFilesUris;
+		return globTestFilesUris;
+		// return testFilesUris;
 	}
 
 	protected async findsTestable(fileUris: vscode.Uri[]): Promise<Testable[]> {
@@ -143,9 +141,7 @@ export class TestableProvider {
 			fileIndex--
 		) {
 			try {
-				// @i: the uri = vscode.Uri.file... is temporary until the findTestFiles function fix
-				const uri = vscode.Uri.file((fileUris[fileIndex] as unknown) as string);
-				// const uri = fileUris[fileIndex];
+				const uri = fileUris[fileIndex];
 				const fileContent = await vscode.workspace.fs.readFile(uri);
 
 				const text = fileContent.toString();
@@ -163,7 +159,7 @@ export class TestableProvider {
 					}
 				}
 			} catch (err) {
-				console.warn('ERRR: ', err);
+				console.warn('[Jest by name]: ', err);
 			}
 		}
 		return testable;

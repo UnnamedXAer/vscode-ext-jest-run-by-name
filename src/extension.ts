@@ -8,9 +8,6 @@ import * as JestByName from './services/jestByName';
 export function activate(context: vscode.ExtensionContext) {
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
-	console.log(
-		'Congratulations, your extension "vscode-ext-jest-run-by-name" is now active!'
-	);
 
 	// @todo: load testable on extension activate
 	// @improvement: show loading indicator while loading testable.
